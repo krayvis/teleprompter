@@ -124,6 +124,9 @@ pasteBtn.addEventListener('click', async () => {
 // ── Play / Pause ───────────────────────────────────────────────
 function startScrolling() {
   if (isPlaying) return;
+  // If at the end, restart from the beginning
+  const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+  if (offsetY >= maxScroll) resetScroll();
   isPlaying = true;
   lastTs = null;
   playPauseBtn.textContent = 'II Pause';
