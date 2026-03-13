@@ -90,9 +90,8 @@ function showPrompter() {
 function resetScroll() {
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
   if (flipVToggle.checked) {
-    // Skip the trailing spacer so flipped text starts at the last line, not blank space
-    const spacerHeight = document.getElementById('scroll-spacer').offsetHeight;
-    offsetY = maxScroll - spacerHeight;
+    // Start at the bottom so the scroll-spacer acts as visual leading space
+    offsetY = maxScroll;
   } else {
     offsetY = 0;
   }
@@ -109,22 +108,9 @@ function showEditor() {
 startBtn.addEventListener('click', showPrompter);
 editBtn.addEventListener('click', showEditor);
 
-pasteBtn.addEventListener('click', async () => {
-  try {
-    const text = await navigator.clipboard.readText();
-    scriptInput.focus();
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount) {
-      const range = sel.getRangeAt(0);
-      range.deleteContents();
-      range.insertNode(document.createTextNode(text));
-      range.collapse(false);
-    } else {
-      scriptInput.textContent += text;
-    }
-  } catch {
-    // Clipboard access denied — browser may show its own permission prompt
-  }
+pasteBtn.addEventListener('click', () => {
+  scriptInput.focus();
+  document.execCommand('paste');
 });
 
 // ── Play / Pause ───────────────────────────────────────────────
@@ -179,11 +165,9 @@ function tick(ts) {
   scrollContainer.scrollTop = Math.floor(offsetY);
 
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
-  const spacerHeight = document.getElementById('scroll-spacer').offsetHeight;
-  const flipStop = spacerHeight; // stop when the top padding becomes trailing space
-  const done = flipped ? offsetY <= flipStop : offsetY >= maxScroll;
+  const done = flipped ? offsetY <= 0 : offsetY >= maxScroll;
   if (done) {
-    offsetY = flipped ? flipStop : maxScroll;
+    offsetY = flipped ? 0 : maxScroll;
     stopScrolling();
     showHud();
     return;
@@ -197,15 +181,12 @@ function tick(ts) {
 function updateProgress() {
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
   if (maxScroll <= 0) return;
-  const spacerHeight = document.getElementById('scroll-spacer').offsetHeight;
   const flipped = flipVToggle.checked;
   let pct, remainingPx;
 
   if (flipped) {
-    const start = maxScroll - spacerHeight;
-    const range = start - spacerHeight;
-    pct = range > 0 ? Math.round(((start - scrollContainer.scrollTop) / range) * 100) : 0;
-    remainingPx = Math.max(0, scrollContainer.scrollTop - spacerHeight);
+    pct = maxScroll > 0 ? Math.round(((maxScroll - scrollContainer.scrollTop) / maxScroll) * 100) : 0;
+    remainingPx = Math.max(0, scrollContainer.scrollTop);
   } else {
     pct = Math.round((scrollContainer.scrollTop / maxScroll) * 100);
     remainingPx = Math.max(0, maxScroll - scrollContainer.scrollTop);
@@ -238,7 +219,11 @@ function applyFontSize(px) {
 function applyTransform() {
   const sx = mirrorToggle.checked ? -1 : 1;
   const sy = flipVToggle.checked  ? -1 : 1;
-  scriptText.style.transform = (sx === 1 && sy === 1) ? '' : `scale(${sx}, ${sy})`;
+  const t  = (sx === 1 && sy === 1) ? '' : `scale(${sx}, ${sy})`;
+  scriptText.style.transform = t;
+  // Mirror the HUD labels so they're readable through the teleprompter optics
+  progressLabel.style.transform = t;
+  timeLabel.style.transform = t;
 }
 
 // ── Format toolbar ─────────────────────────────────────────────
@@ -396,8 +381,7 @@ scrollContainer.addEventListener('wheel', (e) => {
   e.preventDefault();
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
   if (tapPauseToggle.checked) stopScrolling();
-  const delta = flipVToggle.checked ? -e.deltaY : e.deltaY;
-  offsetY = Math.max(0, Math.min(offsetY + delta, maxScroll));
+  offsetY = Math.max(0, Math.min(offsetY + e.deltaY, maxScroll));
   scrollContainer.scrollTop = Math.floor(offsetY);
   updateProgress();
   showHud();
@@ -449,13 +433,11 @@ scrollContainer.addEventListener('touchmove', (e) => {
   touchLastTime = e.timeStamp;
 
   // Smooth velocity in px/ms (weighted average to reduce jitter)
-  const flipped = flipVToggle.checked;
-  const rawVel  = dt > 0 ? (flipped ? -dy : dy) / dt : 0;
+  const rawVel = dt > 0 ? dy / dt : 0;
   touchVelocity = touchVelocity * 0.4 + rawVel * 0.6;
 
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
-  const delta = flipped ? -dy : dy;
-  offsetY = Math.max(0, Math.min(offsetY + delta, maxScroll));
+  offsetY = Math.max(0, Math.min(offsetY + dy, maxScroll));
   scrollContainer.scrollTop = Math.floor(offsetY);
   updateProgress();
   showHud();

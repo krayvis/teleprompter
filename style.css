@@ -21,7 +21,7 @@ html, body {
 }
 
 /* ── View switching ───────────────────────────────────────── */
-.view        { display: none; height: 100vh; height: 100dvh; }
+.view        { display: none; height: 100vh; height: -webkit-fill-available; height: 100dvh; }
 .view.active { display: flex; flex-direction: column; }
 
 /* ── Buttons ──────────────────────────────────────────────── */
@@ -82,6 +82,13 @@ html, body {
 }
 .fmt-btn:hover  { background: var(--border); }
 .fmt-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.fmt-divider {
+  width: 1px;
+  background: var(--border);
+  margin: 2px 4px;
+  align-self: stretch;
+}
 
 .editor-area { flex: 1; display: flex; padding: 1.25rem; overflow: hidden; }
 
@@ -202,8 +209,8 @@ html, body {
   pointer-events: auto;
 }
 
-#progress-label { margin-left: auto; color: var(--muted); font-size: .85rem; }
-#time-label     { color: var(--muted); font-size: .85rem; }
+#progress-label { margin-left: auto; color: var(--muted); font-size: .85rem; display: inline-block; }
+#time-label     { color: var(--muted); font-size: .85rem; display: inline-block; }
 
 /* ── Controls ─────────────────────────────────────────────── */
 .control-group {
