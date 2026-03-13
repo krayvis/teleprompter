@@ -14,6 +14,7 @@
 
 html, body {
   height: 100%;
+  overflow: hidden;
   background: var(--bg);
   color: var(--text);
   font-family: system-ui, sans-serif;
@@ -35,9 +36,15 @@ html, body {
 }
 .btn-primary  { background: var(--accent);  color: #fff; }
 .btn-primary:hover { background: var(--accent-hv); }
+.btn-primary.is-playing {
+  background: #1a3a5c;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,.5);
+  color: #a0c4f0;
+}
 .btn-ghost    { background: transparent; color: var(--muted); border: 1px solid var(--border); }
 .btn-ghost:hover  { color: var(--text); border-color: var(--muted); }
 .btn-large    { padding: .75rem 2rem; font-size: 1.1rem; }
+#play-pause-btn { width: 8.5em; text-align: center; }
 
 /* ── EDIT VIEW ────────────────────────────────────────────── */
 #edit-view .toolbar {
@@ -194,6 +201,7 @@ html, body {
 }
 
 #progress-label { margin-left: auto; color: var(--muted); font-size: .85rem; }
+#time-label     { color: var(--muted); font-size: .85rem; }
 
 /* ── Controls ─────────────────────────────────────────────── */
 .control-group {

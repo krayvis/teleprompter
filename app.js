@@ -16,6 +16,7 @@ const sizeVal       = document.getElementById('size-val');
 const mirrorToggle  = document.getElementById('mirror-toggle');
 const flipVToggle   = document.getElementById('flip-v-toggle');
 const progressLabel = document.getElementById('progress-label');
+const timeLabel     = document.getElementById('time-label');
 const hud           = document.getElementById('hud');
 
 const settingsBtn      = document.getElementById('settings-btn');
@@ -110,7 +111,8 @@ function startScrolling() {
   if (isPlaying) return;
   isPlaying = true;
   lastTs = null;
-  playPauseBtn.textContent = '⏸ Pause';
+  playPauseBtn.textContent = 'II Pause';
+  playPauseBtn.classList.add('is-playing');
   closeSettings();
   rafId = requestAnimationFrame(tick);
 }
@@ -119,6 +121,7 @@ function stopScrolling() {
   if (!isPlaying) return;
   isPlaying = false;
   playPauseBtn.textContent = '▶ Play';
+  playPauseBtn.classList.remove('is-playing');
   cancelAnimationFrame(rafId);
   rafId = null;
   clearTimeout(hudTimeout);
@@ -173,21 +176,32 @@ function updateProgress() {
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
   if (maxScroll <= 0) return;
   const spacerHeight = document.getElementById('scroll-spacer').offsetHeight;
-  let pct;
-  if (flipVToggle.checked) {
-    // Travel range: from (maxScroll - spacerHeight) down to spacerHeight
+  const flipped = flipVToggle.checked;
+  let pct, remainingPx;
+
+  if (flipped) {
     const start = maxScroll - spacerHeight;
     const range = start - spacerHeight;
     pct = range > 0 ? Math.round(((start - scrollContainer.scrollTop) / range) * 100) : 0;
+    remainingPx = Math.max(0, scrollContainer.scrollTop - spacerHeight);
   } else {
     pct = Math.round((scrollContainer.scrollTop / maxScroll) * 100);
+    remainingPx = Math.max(0, maxScroll - scrollContainer.scrollTop);
   }
+
   progressLabel.textContent = `${Math.max(0, Math.min(100, pct))}%`;
+
+  const speedPxPerSec = +speedSlider.value * BASE_SPEED;
+  const totalSec = Math.round(remainingPx / speedPxPerSec);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  timeLabel.textContent = `${m}:${String(s).padStart(2, '0')} left`;
 }
 
 // ── Controls ───────────────────────────────────────────────────
 speedSlider.addEventListener('input', () => {
   speedVal.textContent = speedSlider.value;
+  updateProgress();
 });
 
 sizeSlider.addEventListener('input', () => {
