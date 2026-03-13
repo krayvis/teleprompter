@@ -27,6 +27,7 @@ const marginVal        = document.getElementById('margin-val');
 const cueToggle        = document.getElementById('cue-toggle');
 const focusLine        = document.getElementById('focus-line');
 const themeRadios      = document.querySelectorAll('input[name="theme"]');
+const tapPauseToggle   = document.getElementById('tap-pause-toggle');
 
 // ── State ──────────────────────────────────────────────────────
 let isPlaying   = false;
@@ -374,6 +375,7 @@ flipVToggle.addEventListener('change', () => {
 scrollContainer.addEventListener('wheel', (e) => {
   e.preventDefault();
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+  if (tapPauseToggle.checked) stopScrolling();
   const delta = flipVToggle.checked ? -e.deltaY : e.deltaY;
   offsetY = Math.max(0, Math.min(offsetY + delta, maxScroll));
   scrollContainer.scrollTop = Math.floor(offsetY);
@@ -411,6 +413,7 @@ function runMomentum(ts) {
 
 scrollContainer.addEventListener('touchstart', (e) => {
   cancelMomentum();
+  if (tapPauseToggle.checked) stopScrolling();
   touchStartY   = e.touches[0].clientY;
   touchLastTime = e.timeStamp;
   touchVelocity = 0;
@@ -475,7 +478,11 @@ prompterView.addEventListener('mousemove', () => {
 prompterView.addEventListener('click', (e) => {
   // Clicks on the background toggle play; HUD buttons handle themselves
   if (e.target === prompterView || e.target === scrollContainer) {
-    togglePlay();
+    if (tapPauseToggle.checked) {
+      stopScrolling();
+    } else {
+      togglePlay();
+    }
   }
   showHud();
 });
