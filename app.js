@@ -241,8 +241,26 @@ function sanitizeNode(src, dest) {
         sanitizeNode(node, el);
         dest.appendChild(el);
       } else {
-        // Unwrap the tag but preserve its content
-        sanitizeNode(node, dest);
+        // Detect style-based formatting (Google Docs uses spans with inline styles
+        // instead of semantic tags like <em>/<strong>)
+        const s = node.style;
+        let container = dest;
+        if (s.fontStyle === 'italic') {
+          const el = document.createElement('em');
+          container.appendChild(el);
+          container = el;
+        }
+        if (s.fontWeight === 'bold' || parseInt(s.fontWeight) >= 600) {
+          const el = document.createElement('strong');
+          container.appendChild(el);
+          container = el;
+        }
+        if (s.textDecoration.includes('underline') || s.textDecorationLine.includes('underline')) {
+          const el = document.createElement('u');
+          container.appendChild(el);
+          container = el;
+        }
+        sanitizeNode(node, container);
         // Append a <br> to represent the line break the block element provided
         if (BLOCK_TAGS.has(node.tagName)) {
           dest.appendChild(document.createElement('br'));
