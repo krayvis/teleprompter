@@ -104,17 +104,39 @@ editBtn.addEventListener('click', showEditor);
 
 pasteBtn.addEventListener('click', async () => {
   try {
-    const text = await navigator.clipboard.readText();
-    if (!text) return;
-    scriptInput.focus();
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount) {
-      const range = sel.getRangeAt(0);
-      range.deleteContents();
-      range.insertNode(document.createTextNode(text));
-      range.collapse(false);
+    // Try to read rich HTML first (same path as manual Cmd+V)
+    let html = null;
+    if (navigator.clipboard.read) {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        if (item.types.includes('text/html')) {
+          html = await (await item.getType('text/html')).text();
+          break;
+        }
+      }
+    }
+    if (html) {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const frag = document.createDocumentFragment();
+      sanitizeNode(doc.body, frag);
+      const tmp = document.createElement('div');
+      tmp.appendChild(frag);
+      scriptInput.focus();
+      document.execCommand('insertHTML', false, tmp.innerHTML);
     } else {
-      scriptInput.textContent += text;
+      // Fall back to plain text
+      const text = await navigator.clipboard.readText();
+      if (!text) return;
+      scriptInput.focus();
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount) {
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(document.createTextNode(text));
+        range.collapse(false);
+      } else {
+        scriptInput.textContent += text;
+      }
     }
   } catch {
     // Clipboard access denied or not supported
@@ -297,9 +319,13 @@ function sanitizeNode(src, dest) {
           container = el;
         }
         sanitizeNode(node, container);
-        // Append a <br> to represent the line break the block element provided
+        // Add a <br> between block elements, but not after the last one
         if (BLOCK_TAGS.has(node.tagName)) {
-          dest.appendChild(document.createElement('br'));
+          let next = node.nextSibling;
+          while (next && next.nodeType === Node.TEXT_NODE && !next.textContent.trim()) {
+            next = next.nextSibling;
+          }
+          if (next) dest.appendChild(document.createElement('br'));
         }
       }
     }
