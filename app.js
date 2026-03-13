@@ -113,6 +113,7 @@ function startScrolling() {
   lastTs = null;
   playPauseBtn.textContent = 'II Pause';
   playPauseBtn.classList.add('is-playing');
+  cancelMomentum();
   closeSettings();
   rafId = requestAnimationFrame(tick);
 }
@@ -380,10 +381,39 @@ scrollContainer.addEventListener('wheel', (e) => {
   showHud();
 }, { passive: false });
 
-let touchStartY = null;
+let touchStartY    = null;
+let touchVelocity  = 0;   // px/ms — positive = scrolling forward
+let touchLastTime  = null;
+let momentumId     = null;
+let momentumTs     = null;
+
+function cancelMomentum() {
+  if (momentumId) { cancelAnimationFrame(momentumId); momentumId = null; }
+  momentumTs = null;
+}
+
+function runMomentum(ts) {
+  if (momentumTs === null) momentumTs = ts;
+  const dt = ts - momentumTs;
+  momentumTs = ts;
+
+  const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+  offsetY = Math.max(0, Math.min(offsetY + touchVelocity * dt, maxScroll));
+  scrollContainer.scrollTop = Math.floor(offsetY);
+  updateProgress();
+
+  // Friction: ~0.995 per ms gives a natural ~1s coast
+  touchVelocity *= Math.pow(0.995, dt);
+
+  if (Math.abs(touchVelocity) < 0.05) { momentumId = null; momentumTs = null; return; }
+  momentumId = requestAnimationFrame(runMomentum);
+}
 
 scrollContainer.addEventListener('touchstart', (e) => {
-  touchStartY = e.touches[0].clientY;
+  cancelMomentum();
+  touchStartY   = e.touches[0].clientY;
+  touchLastTime = e.timeStamp;
+  touchVelocity = 0;
 }, { passive: true });
 
 scrollContainer.addEventListener('touchmove', (e) => {
@@ -391,15 +421,29 @@ scrollContainer.addEventListener('touchmove', (e) => {
   e.preventDefault();
   const dy = touchStartY - e.touches[0].clientY; // positive = swiped up
   touchStartY = e.touches[0].clientY;
+
+  const dt = e.timeStamp - touchLastTime;
+  touchLastTime = e.timeStamp;
+
+  // Smooth velocity in px/ms (weighted average to reduce jitter)
+  const flipped = flipVToggle.checked;
+  const rawVel  = dt > 0 ? (flipped ? -dy : dy) / dt : 0;
+  touchVelocity = touchVelocity * 0.4 + rawVel * 0.6;
+
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
-  const delta = flipVToggle.checked ? -dy : dy;
+  const delta = flipped ? -dy : dy;
   offsetY = Math.max(0, Math.min(offsetY + delta, maxScroll));
   scrollContainer.scrollTop = Math.floor(offsetY);
   updateProgress();
   showHud();
 }, { passive: false });
 
-scrollContainer.addEventListener('touchend', () => { touchStartY = null; });
+scrollContainer.addEventListener('touchend', () => {
+  touchStartY = null;
+  if (Math.abs(touchVelocity) > 0.05) {
+    momentumId = requestAnimationFrame(runMomentum);
+  }
+});
 
 // ── Fullscreen ─────────────────────────────────────────────────
 fullscreenBtn.addEventListener('click', () => {
