@@ -81,6 +81,7 @@ function showPrompter() {
   // Wait one frame so the DOM has rendered and scrollHeight is accurate
   requestAnimationFrame(() => {
     resetScroll();
+    updateProgress();
     showHud();
   });
 }

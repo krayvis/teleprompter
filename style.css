@@ -179,7 +179,8 @@ html, body {
 /* Dim everything except the play/pause button */
 #hud.dimmed .control-group,
 #hud.dimmed .btn-ghost,
-#hud.dimmed #progress-label {
+#hud.dimmed #progress-label,
+#hud.dimmed #time-label {
   opacity: 0;
   transition: opacity .8s;
   pointer-events: none;
@@ -194,6 +195,7 @@ html, body {
 #hud.visible .control-group,
 #hud.visible .btn-ghost,
 #hud.visible #progress-label,
+#hud.visible #time-label,
 #hud.visible #play-pause-btn {
   opacity: 1;
   transition: opacity .3s;
