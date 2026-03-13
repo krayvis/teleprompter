@@ -102,9 +102,23 @@ function showEditor() {
 startBtn.addEventListener('click', showPrompter);
 editBtn.addEventListener('click', showEditor);
 
-pasteBtn.addEventListener('click', () => {
-  scriptInput.focus();
-  document.execCommand('paste');
+pasteBtn.addEventListener('click', async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text) return;
+    scriptInput.focus();
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(document.createTextNode(text));
+      range.collapse(false);
+    } else {
+      scriptInput.textContent += text;
+    }
+  } catch {
+    // Clipboard access denied or not supported
+  }
 });
 
 // ── Play / Pause ───────────────────────────────────────────────
@@ -213,11 +227,11 @@ function applyTransform() {
   const flipTextX = h !== v; // XOR: flip text horizontally when exactly one of H/V is active
   scriptText.style.transform = flipTextX ? 'scaleX(-1)' : '';
 
-  // HUD labels: apply the transform that makes them readable from the reader's perspective.
-  // FlipH alone   → horizontal mirror   → scale(-1, 1)
-  // FlipV alone   → device upside-down  → scale(-1, -1)
-  // FlipH + FlipV → both               → scale( 1, -1)
-  const lx = (h !== v) ? -1 : 1;
+  // HUD labels: mirror each axis independently so the labels stay readable.
+  // FlipH alone   → scale(-1,  1)
+  // FlipV alone   → scale( 1, -1)
+  // FlipH + FlipV → scale(-1, -1)
+  const lx = h ? -1 : 1;
   const ly = v ? -1 : 1;
   const lt = (lx === 1 && ly === 1) ? '' : `scale(${lx},${ly})`;
   progressLabel.style.transform = lt;
