@@ -44,7 +44,7 @@ html, body {
 .btn-ghost    { background: transparent; color: var(--muted); border: 1px solid var(--border); }
 .btn-ghost:hover  { color: var(--text); border-color: var(--muted); }
 .btn-large    { padding: .75rem 2rem; font-size: 1.1rem; }
-#play-pause-btn { width: 8.5em; text-align: center; }
+#play-pause-btn { width: 7em; padding-left: 1rem; padding-right: 1rem; text-align: center; }
 
 /* ── EDIT VIEW ────────────────────────────────────────────── */
 #edit-view .toolbar {
