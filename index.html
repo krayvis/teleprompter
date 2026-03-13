@@ -12,7 +12,6 @@
   <div id="edit-view" class="view active">
     <header class="toolbar">
       <h1 class="logo">Teleprompter</h1>
-      <button id="paste-btn" class="btn btn-ghost">⎘ Paste</button>
       <button id="start-btn" class="btn btn-primary">Start ▶</button>
     </header>
 
@@ -20,6 +19,8 @@
       <button class="fmt-btn" data-cmd="bold"        title="Bold (⌘B)"><b>B</b></button>
       <button class="fmt-btn" data-cmd="italic"      title="Italic (⌘I)"><i>I</i></button>
       <button class="fmt-btn" data-cmd="underline"   title="Underline (⌘U)"><u>U</u></button>
+      <div class="fmt-divider"></div>
+      <button id="paste-btn" class="fmt-btn" title="Paste from clipboard">⎘</button>
     </div>
 
     <main class="editor-area">
