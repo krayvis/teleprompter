@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Teleprompter</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -103,6 +103,24 @@
           <input type="checkbox" id="cue-toggle" />
           <span class="toggle-track"></span>
         </label>
+
+        <div class="setting-col">
+          <span class="setting-label">Theme</span>
+          <div class="theme-options">
+            <label class="theme-opt" title="White on Black">
+              <input type="radio" name="theme" value="dark" checked />
+              <span class="theme-swatch dark"></span>
+            </label>
+            <label class="theme-opt" title="Black on White">
+              <input type="radio" name="theme" value="light" />
+              <span class="theme-swatch light"></span>
+            </label>
+            <label class="theme-opt" title="Amber — easy on the eyes">
+              <input type="radio" name="theme" value="amber" />
+              <span class="theme-swatch amber"></span>
+            </label>
+          </div>
+        </div>
 
       </div>
     </div>

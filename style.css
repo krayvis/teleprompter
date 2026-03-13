@@ -20,7 +20,7 @@ html, body {
 }
 
 /* ── View switching ───────────────────────────────────────── */
-.view        { display: none; height: 100vh; }
+.view        { display: none; height: 100vh; height: 100dvh; }
 .view.active { display: flex; flex-direction: column; }
 
 /* ── Buttons ──────────────────────────────────────────────── */
@@ -158,6 +158,7 @@ html, body {
 
 .hud-bottom {
   flex-wrap: wrap;
+  padding-bottom: calc(.85rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* ── Dimmed state (inactivity during playback) ────────────── */
@@ -247,8 +248,12 @@ html, body {
 /* ── Settings gear button ─────────────────────────────────── */
 .settings-gear {
   margin-left: auto;
-  font-size: 1.1rem;
+  font-size: 1.5rem;
   padding: .4rem .6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ── Settings panel ───────────────────────────────────────── */
@@ -315,3 +320,69 @@ html, body {
   color: var(--muted);
   font-size: .8rem;
 }
+
+/* ── Theme selector ───────────────────────────────────────── */
+.setting-col {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  font-size: .875rem;
+  color: var(--text);
+}
+
+.theme-options {
+  display: flex;
+  gap: .75rem;
+}
+
+.theme-opt { cursor: pointer; }
+.theme-opt input[type="radio"] { display: none; }
+
+.theme-swatch {
+  display: block;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.theme-opt input:checked + .theme-swatch {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.theme-swatch.dark  { background: #000; }
+.theme-swatch.light { background: #fff; }
+.theme-swatch.amber {
+  background: #1c1500;
+  border-color: #6b4e00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e8a020;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+.theme-swatch.amber::after { content: 'A'; }
+
+/* ── Prompter themes ───────────────────────────────────────── */
+#prompter-view[data-theme="light"] { background: #fff; }
+#prompter-view[data-theme="light"] #script-text { color: #111; }
+#prompter-view[data-theme="light"] .hud-top,
+#prompter-view[data-theme="light"] .hud-bottom  { background: rgba(255,255,255,.88); }
+#prompter-view[data-theme="light"] #hud.dimmed .hud-top,
+#prompter-view[data-theme="light"] #hud.dimmed .hud-bottom { background: rgba(255,255,255,.06); }
+#prompter-view[data-theme="light"] .btn-ghost   { color: #444; border-color: #bbb; }
+#prompter-view[data-theme="light"] .control-group,
+#prompter-view[data-theme="light"] #progress-label { color: #555; }
+
+#prompter-view[data-theme="amber"] { background: #1c1500; }
+#prompter-view[data-theme="amber"] #script-text { color: #e8a020; }
+#prompter-view[data-theme="amber"] .hud-top,
+#prompter-view[data-theme="amber"] .hud-bottom  { background: rgba(10,8,0,.88); }
+#prompter-view[data-theme="amber"] #hud.dimmed .hud-top,
+#prompter-view[data-theme="amber"] #hud.dimmed .hud-bottom { background: rgba(10,8,0,.06); }
+#prompter-view[data-theme="amber"] .btn-ghost   { color: #b87d10; border-color: #6b4e00; }
+#prompter-view[data-theme="amber"] .control-group,
+#prompter-view[data-theme="amber"] #progress-label { color: #b87d10; }

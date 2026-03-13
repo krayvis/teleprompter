@@ -25,6 +25,7 @@ const marginSlider     = document.getElementById('margin-slider');
 const marginVal        = document.getElementById('margin-val');
 const cueToggle        = document.getElementById('cue-toggle');
 const focusLine        = document.getElementById('focus-line');
+const themeRadios      = document.querySelectorAll('input[name="theme"]');
 
 // ── State ──────────────────────────────────────────────────────
 let isPlaying   = false;
@@ -110,6 +111,7 @@ function startScrolling() {
   isPlaying = true;
   lastTs = null;
   playPauseBtn.textContent = '⏸ Pause';
+  closeSettings();
   rafId = requestAnimationFrame(tick);
 }
 
@@ -304,6 +306,13 @@ marginSlider.addEventListener('input', () => {
 // Cue line
 cueToggle.addEventListener('change', () => {
   focusLine.classList.toggle('visible', cueToggle.checked);
+});
+
+// Theme
+themeRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    prompterView.dataset.theme = radio.value;
+  });
 });
 
 // Don't dim the HUD while settings panel is open
