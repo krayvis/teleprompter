@@ -6,6 +6,7 @@ const scriptText    = document.getElementById('script-text');
 const scrollContainer = document.getElementById('scroll-container');
 
 const startBtn      = document.getElementById('start-btn');
+const pasteBtn      = document.getElementById('paste-btn');
 const editBtn       = document.getElementById('edit-btn');
 const playPauseBtn  = document.getElementById('play-pause-btn');
 const fullscreenBtn = document.getElementById('fullscreen-btn');
@@ -107,6 +108,24 @@ function showEditor() {
 
 startBtn.addEventListener('click', showPrompter);
 editBtn.addEventListener('click', showEditor);
+
+pasteBtn.addEventListener('click', async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    scriptInput.focus();
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(document.createTextNode(text));
+      range.collapse(false);
+    } else {
+      scriptInput.textContent += text;
+    }
+  } catch {
+    // Clipboard access denied — browser may show its own permission prompt
+  }
+});
 
 // ── Play / Pause ───────────────────────────────────────────────
 function startScrolling() {
