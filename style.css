@@ -1,0 +1,317 @@
+/* ── Reset & base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0d0d0d;
+  --surface:   #1a1a1a;
+  --border:    #2e2e2e;
+  --text:      #f0f0f0;
+  --muted:     #888;
+  --accent:    #4f9cf9;
+  --accent-hv: #3a87e8;
+  --radius:    8px;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+}
+
+/* ── View switching ───────────────────────────────────────── */
+.view        { display: none; height: 100vh; }
+.view.active { display: flex; flex-direction: column; }
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn {
+  padding: .45rem 1rem;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: .9rem;
+  font-weight: 600;
+  transition: background .15s;
+}
+.btn-primary  { background: var(--accent);  color: #fff; }
+.btn-primary:hover { background: var(--accent-hv); }
+.btn-ghost    { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover  { color: var(--text); border-color: var(--muted); }
+.btn-large    { padding: .75rem 2rem; font-size: 1.1rem; }
+
+/* ── EDIT VIEW ────────────────────────────────────────────── */
+#edit-view .toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .75rem 1.25rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.logo { font-size: 1.1rem; letter-spacing: .04em; color: var(--accent); }
+
+/* ── Format toolbar ───────────────────────────────────────── */
+.format-bar {
+  display: flex;
+  gap: .35rem;
+  padding: .5rem 1.25rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.fmt-btn {
+  width: 32px; height: 32px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  cursor: pointer;
+  font-size: .95rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, border-color .15s;
+}
+.fmt-btn:hover  { background: var(--border); }
+.fmt-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.editor-area { flex: 1; display: flex; padding: 1.25rem; overflow: hidden; }
+
+.editor-content {
+  flex: 1;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  outline: none;
+  font-family: inherit;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.editor-content:focus { border-color: var(--accent); }
+
+/* Placeholder via data attribute */
+.editor-content:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+/* ── PROMPTER VIEW ────────────────────────────────────────── */
+#prompter-view {
+  position: relative;
+  background: #000;
+  overflow: hidden;
+}
+
+#scroll-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;         /* JS controls scrolling via transform */
+}
+
+#script-text {
+  padding: 60vh 8vw 0;      /* leading space so text starts at center */
+  font-size: 48px;
+  line-height: 1.55;
+  color: #fff;
+  white-space: pre-wrap;
+  word-break: break-word;
+  will-change: transform;
+}
+
+
+#scroll-spacer { height: 60vh; } /* trailing space */
+
+/* ── HUD ──────────────────────────────────────────────────── */
+#hud {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;       /* pass clicks through when not needed */
+  transition: opacity .4s;
+}
+
+#hud.hidden { opacity: 0; }
+#hud.hidden * { pointer-events: none; }
+
+#hud.visible { opacity: 1; }
+#hud.visible * { pointer-events: auto; }
+
+.hud-top, .hud-bottom {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .85rem 1.25rem;
+  background: rgba(0, 0, 0, .82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background .8s, backdrop-filter .8s;
+}
+
+.hud-bottom {
+  flex-wrap: wrap;
+}
+
+/* ── Dimmed state (inactivity during playback) ────────────── */
+#hud.dimmed .hud-top,
+#hud.dimmed .hud-bottom {
+  background: rgba(0, 0, 0, .08);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Dim everything except the play/pause button */
+#hud.dimmed .control-group,
+#hud.dimmed .btn-ghost,
+#hud.dimmed #progress-label {
+  opacity: 0;
+  transition: opacity .8s;
+  pointer-events: none;
+}
+
+#hud.dimmed #play-pause-btn {
+  opacity: 0.35;
+  transition: opacity .8s;
+}
+
+/* Restore transitions when undimming */
+#hud.visible .control-group,
+#hud.visible .btn-ghost,
+#hud.visible #progress-label,
+#hud.visible #play-pause-btn {
+  opacity: 1;
+  transition: opacity .3s;
+  pointer-events: auto;
+}
+
+#progress-label { margin-left: auto; color: var(--muted); font-size: .85rem; }
+
+/* ── Controls ─────────────────────────────────────────────── */
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .85rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.control-group input[type="range"] {
+  accent-color: var(--accent);
+  width: 140px;
+}
+
+/* Toggle switch */
+.toggle input[type="checkbox"] { display: none; }
+.toggle-track {
+  width: 36px; height: 20px;
+  background: var(--border);
+  border-radius: 99px;
+  position: relative;
+  transition: background .2s;
+  display: inline-block;
+}
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: transform .2s;
+}
+.toggle input:checked + .toggle-track { background: var(--accent); }
+.toggle input:checked + .toggle-track::after { transform: translateX(16px); }
+
+/* ── Focus / cue line ─────────────────────────────────────── */
+#focus-line {
+  display: none;
+  position: absolute;
+  left: 0; right: 0;
+  top: 33%;
+  height: 3px;
+  background: rgba(79, 156, 249, .25);
+  pointer-events: none;
+  z-index: 1;
+}
+#focus-line.visible { display: block; }
+
+/* ── Settings gear button ─────────────────────────────────── */
+.settings-gear {
+  margin-left: auto;
+  font-size: 1.1rem;
+  padding: .4rem .6rem;
+}
+
+/* ── Settings panel ───────────────────────────────────────── */
+#settings-panel {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 260px;
+  background: rgba(18, 18, 18, .97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-left: 1px solid var(--border);
+  transform: translateX(100%);
+  transition: transform .3s ease;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+#settings-panel.open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.settings-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-size: .875rem;
+  color: var(--text);
+  cursor: pointer;
+}
+.setting-label {
+  min-width: 68px;
+  color: var(--muted);
+}
+.setting-row input[type="range"] {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--accent);
+}
+.setting-row span:last-of-type {
+  min-width: 1.5rem;
+  text-align: right;
+  color: var(--muted);
+  font-size: .8rem;
+}

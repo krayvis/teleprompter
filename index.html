@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teleprompter</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── EDIT VIEW ─────────────────────────────────────────── -->
+  <div id="edit-view" class="view active">
+    <header class="toolbar">
+      <h1 class="logo">Teleprompter</h1>
+      <button id="start-btn" class="btn btn-primary">Start ▶</button>
+    </header>
+
+    <div class="format-bar">
+      <button class="fmt-btn" data-cmd="bold"        title="Bold (⌘B)"><b>B</b></button>
+      <button class="fmt-btn" data-cmd="italic"      title="Italic (⌘I)"><i>I</i></button>
+      <button class="fmt-btn" data-cmd="underline"   title="Underline (⌘U)"><u>U</u></button>
+    </div>
+
+    <main class="editor-area">
+      <div
+        id="script-input"
+        class="editor-content"
+        contenteditable="true"
+        spellcheck="false"
+        data-placeholder="Paste or type your script here…"
+      ></div>
+    </main>
+  </div>
+
+  <!-- ── PROMPTER VIEW ─────────────────────────────────────── -->
+  <div id="prompter-view" class="view">
+
+    <!-- Scrolling text container -->
+    <div id="scroll-container">
+      <div id="script-text"></div>
+      <!-- Spacer so text can scroll fully off screen -->
+      <div id="scroll-spacer"></div>
+    </div>
+
+    <!-- Cue / focus line -->
+    <div id="focus-line"></div>
+
+    <!-- HUD overlay (fades out during play) -->
+    <div id="hud">
+      <div class="hud-top">
+        <button id="edit-btn" class="btn btn-ghost">← Edit</button>
+        <span id="progress-label">0%</span>
+        <button id="fullscreen-btn" class="btn btn-ghost">⛶ Fullscreen</button>
+      </div>
+
+      <div class="hud-bottom">
+        <button id="play-pause-btn" class="btn btn-primary btn-large">▶ Play</button>
+
+        <label class="control-group">
+          <span>Speed</span>
+          <input type="range" id="speed-slider" min="1" max="25" value="5" />
+          <span id="speed-val">5</span>
+        </label>
+
+        <label class="control-group">
+          <span>Size</span>
+          <input type="range" id="size-slider" min="20" max="120" value="48" />
+          <span id="size-val">48</span>
+        </label>
+
+        <label class="control-group toggle">
+          <span>Flip H</span>
+          <input type="checkbox" id="mirror-toggle" />
+          <span class="toggle-track"></span>
+        </label>
+
+        <label class="control-group toggle">
+          <span>Flip V</span>
+          <input type="checkbox" id="flip-v-toggle" />
+          <span class="toggle-track"></span>
+        </label>
+
+        <button id="settings-btn" class="btn btn-ghost settings-gear" title="Settings">⚙</button>
+      </div>
+    </div>
+
+    <!-- Settings panel -->
+    <div id="settings-panel">
+      <div class="settings-header">
+        <span>Settings</span>
+        <button id="settings-close-btn" class="btn btn-ghost">✕</button>
+      </div>
+      <div class="settings-body">
+
+        <div class="setting-row">
+          <span class="setting-label">Margins</span>
+          <input type="range" id="margin-slider" min="0" max="25" value="8" />
+          <span id="margin-val">8</span>
+        </div>
+
+        <label class="setting-row toggle">
+          <span class="setting-label">Cue line</span>
+          <input type="checkbox" id="cue-toggle" />
+          <span class="toggle-track"></span>
+        </label>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
