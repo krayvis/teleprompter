@@ -88,14 +88,8 @@ function showPrompter() {
 }
 
 function resetScroll() {
-  const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
-  if (flipVToggle.checked) {
-    // Start at the bottom so the scroll-spacer acts as visual leading space
-    offsetY = maxScroll;
-  } else {
-    offsetY = 0;
-  }
-  scrollContainer.scrollTop = Math.floor(offsetY);
+  offsetY = 0;
+  scrollContainer.scrollTop = 0;
 }
 
 function showEditor() {
@@ -158,16 +152,13 @@ function tick(ts) {
   lastTs = ts;
 
   const speed = +speedSlider.value * BASE_SPEED; // px/s
-  const flipped = flipVToggle.checked;
-  // Flip V: scroll upward (decreasing scrollTop) so flipped text advances correctly
-  offsetY += flipped ? -(speed * dt) : (speed * dt);
+  offsetY += speed * dt;
 
   scrollContainer.scrollTop = Math.floor(offsetY);
 
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
-  const done = flipped ? offsetY <= 0 : offsetY >= maxScroll;
-  if (done) {
-    offsetY = flipped ? 0 : maxScroll;
+  if (offsetY >= maxScroll) {
+    offsetY = maxScroll;
     stopScrolling();
     showHud();
     return;
@@ -181,16 +172,8 @@ function tick(ts) {
 function updateProgress() {
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
   if (maxScroll <= 0) return;
-  const flipped = flipVToggle.checked;
-  let pct, remainingPx;
-
-  if (flipped) {
-    pct = maxScroll > 0 ? Math.round(((maxScroll - scrollContainer.scrollTop) / maxScroll) * 100) : 0;
-    remainingPx = Math.max(0, scrollContainer.scrollTop);
-  } else {
-    pct = Math.round((scrollContainer.scrollTop / maxScroll) * 100);
-    remainingPx = Math.max(0, maxScroll - scrollContainer.scrollTop);
-  }
+  const pct = Math.round((scrollContainer.scrollTop / maxScroll) * 100);
+  const remainingPx = Math.max(0, maxScroll - scrollContainer.scrollTop);
 
   progressLabel.textContent = `${Math.max(0, Math.min(100, pct))}%`;
 
@@ -217,13 +200,28 @@ function applyFontSize(px) {
 }
 
 function applyTransform() {
-  const sx = mirrorToggle.checked ? -1 : 1;
-  const sy = flipVToggle.checked  ? -1 : 1;
-  const t  = (sx === 1 && sy === 1) ? '' : `scale(${sx}, ${sy})`;
-  scriptText.style.transform = t;
-  // Mirror the HUD labels so they're readable through the teleprompter optics
-  progressLabel.style.transform = t;
-  timeLabel.style.transform = t;
+  const h = mirrorToggle.checked;
+  const v = flipVToggle.checked;
+
+  // FlipV: rotate the entire scroll container 180°. This visually flips both axes,
+  // so the spacer (DOM-bottom) becomes visual leading space and scroll direction
+  // stays the same as normal mode (increasing scrollTop = reading forward).
+  scrollContainer.style.transform = v ? 'rotate(180deg)' : '';
+
+  // Counter the accidental horizontal flip caused by the container rotation.
+  // When FlipH is also on, the two horizontal flips cancel → no x transform needed.
+  const flipTextX = h !== v; // XOR: flip text horizontally when exactly one of H/V is active
+  scriptText.style.transform = flipTextX ? 'scaleX(-1)' : '';
+
+  // HUD labels: apply the transform that makes them readable from the reader's perspective.
+  // FlipH alone   → horizontal mirror   → scale(-1, 1)
+  // FlipV alone   → device upside-down  → scale(-1, -1)
+  // FlipH + FlipV → both               → scale( 1, -1)
+  const lx = (h !== v) ? -1 : 1;
+  const ly = v ? -1 : 1;
+  const lt = (lx === 1 && ly === 1) ? '' : `scale(${lx},${ly})`;
+  progressLabel.style.transform = lt;
+  timeLabel.style.transform = lt;
 }
 
 // ── Format toolbar ─────────────────────────────────────────────
@@ -375,7 +373,6 @@ flipVToggle.addEventListener('change', () => {
 
 // ── Manual scroll (wheel + touch) ─────────────────────────────
 // Adjusts offsetY directly so playback resumes from the new position.
-// Flip V inverts the delta so scrolling "up" always means going backward.
 
 scrollContainer.addEventListener('wheel', (e) => {
   e.preventDefault();
