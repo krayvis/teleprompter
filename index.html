@@ -52,9 +52,11 @@
 
     <!-- Scrolling text container -->
     <div id="scroll-container">
-      <div id="script-text"></div>
-      <!-- Spacer so text can scroll fully off screen -->
-      <div id="scroll-spacer"></div>
+      <div id="scroll-content">
+        <div id="script-text"></div>
+        <!-- Spacer so text can scroll fully off screen -->
+        <div id="scroll-spacer"></div>
+      </div>
     </div>
 
     <!-- Cue / focus line -->
@@ -79,12 +81,6 @@
           <span>Speed</span>
           <input type="range" id="speed-slider" min="1" max="25" value="5" />
           <span id="speed-val">5</span>
-        </label>
-
-        <label class="control-group">
-          <span>Size</span>
-          <input type="range" id="size-slider" min="20" max="120" value="48" />
-          <span id="size-val">48</span>
         </label>
 
         <button id="mirror-toggle" class="btn btn-ghost" title="Flip Horizontal">↔</button>
@@ -118,6 +114,12 @@
               <span class="theme-swatch amber"></span>
             </label>
           </div>
+        </div>
+
+        <div class="setting-row">
+          <span class="setting-label">Size</span>
+          <input type="range" id="size-slider" min="20" max="120" value="48" />
+          <span id="size-val">48</span>
         </div>
 
         <div class="setting-row">
