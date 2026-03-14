@@ -29,6 +29,7 @@ const cueToggle        = document.getElementById('cue-toggle');
 const focusLine        = document.getElementById('focus-line');
 const themeRadios      = document.querySelectorAll('input[name="theme"]');
 const tapPauseToggle   = document.getElementById('tap-pause-toggle');
+const fontPicker       = document.getElementById('font-picker');
 
 // ── State ──────────────────────────────────────────────────────
 let isPlaying   = false;
@@ -74,6 +75,7 @@ function showPrompter() {
 
   scriptText.innerHTML = raw;
   applyFontSize(+sizeSlider.value);
+  applyFont(fontPicker.value);
 
   editView.classList.remove('active');
   prompterView.classList.add('active');
@@ -215,6 +217,13 @@ sizeSlider.addEventListener('input', () => {
 function applyFontSize(px) {
   scriptText.style.fontSize = px + 'px';
 }
+
+function applyFont(family) {
+  scriptInput.style.fontFamily = family;
+  scriptText.style.fontFamily  = family;
+}
+
+fontPicker.addEventListener('change', () => applyFont(fontPicker.value));
 
 function applyTransform() {
   const h = mirrorToggle.classList.contains('active');

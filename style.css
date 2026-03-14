@@ -43,6 +43,7 @@ html, body {
 }
 .btn-ghost    { background: transparent; color: var(--muted); border: 1px solid var(--border); }
 .btn-ghost:hover  { color: var(--text); border-color: var(--muted); }
+.btn-ghost.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .btn-large    { padding: .75rem 2rem; font-size: 1.1rem; }
 #play-pause-btn { width: 7em; padding-left: 1rem; padding-right: 1rem; text-align: center; }
 
@@ -89,6 +90,20 @@ html, body {
   margin: 2px 4px;
   align-self: stretch;
 }
+
+.font-picker {
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: .85rem;
+  padding: 0 .5rem;
+  cursor: pointer;
+  outline: none;
+}
+.font-picker:hover { border-color: var(--muted); }
+.font-picker option { background: var(--surface); color: var(--text); }
 
 .editor-area { flex: 1; display: flex; padding: 1.25rem; overflow: hidden; }
 
