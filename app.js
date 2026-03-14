@@ -104,39 +104,17 @@ editBtn.addEventListener('click', showEditor);
 
 pasteBtn.addEventListener('click', async () => {
   try {
-    // Try to read rich HTML first (same path as manual Cmd+V)
-    let html = null;
-    if (navigator.clipboard.read) {
-      const items = await navigator.clipboard.read();
-      for (const item of items) {
-        if (item.types.includes('text/html')) {
-          html = await (await item.getType('text/html')).text();
-          break;
-        }
-      }
-    }
-    if (html) {
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const frag = document.createDocumentFragment();
-      sanitizeNode(doc.body, frag);
-      const tmp = document.createElement('div');
-      tmp.appendChild(frag);
-      scriptInput.focus();
-      document.execCommand('insertHTML', false, tmp.innerHTML);
+    const text = await navigator.clipboard.readText();
+    if (!text) return;
+    scriptInput.focus();
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(document.createTextNode(text));
+      range.collapse(false);
     } else {
-      // Fall back to plain text
-      const text = await navigator.clipboard.readText();
-      if (!text) return;
-      scriptInput.focus();
-      const sel = window.getSelection();
-      if (sel && sel.rangeCount) {
-        const range = sel.getRangeAt(0);
-        range.deleteContents();
-        range.insertNode(document.createTextNode(text));
-        range.collapse(false);
-      } else {
-        scriptInput.textContent += text;
-      }
+      scriptInput.textContent += text;
     }
   } catch {
     // Clipboard access denied or not supported
@@ -239,8 +217,8 @@ function applyFontSize(px) {
 }
 
 function applyTransform() {
-  const h = mirrorToggle.checked;
-  const v = flipVToggle.checked;
+  const h = mirrorToggle.classList.contains('active');
+  const v = flipVToggle.classList.contains('active');
 
   // FlipV: rotate the entire scroll container 180°. This visually flips both axes,
   // so the spacer (DOM-bottom) becomes visual leading space and scroll direction
@@ -265,6 +243,7 @@ function applyTransform() {
 
 // ── Format toolbar ─────────────────────────────────────────────
 document.querySelectorAll('.fmt-btn').forEach(btn => {
+  if (!btn.dataset.cmd) return;
   btn.addEventListener('mousedown', (e) => {
     e.preventDefault(); // keep focus in editor
     document.execCommand(btn.dataset.cmd, false, null);
@@ -332,17 +311,31 @@ function sanitizeNode(src, dest) {
   });
 }
 
+// Remove double <br>s (from trailing <br> inside block elements) and any trailing <br>
+function collapseBrs(el) {
+  el.querySelectorAll('br').forEach(br => {
+    let prev = br.previousSibling;
+    while (prev && prev.nodeType === Node.TEXT_NODE && !prev.textContent.trim()) prev = prev.previousSibling;
+    if (prev && prev.nodeName === 'BR') br.remove();
+  });
+  while (el.lastChild && el.lastChild.nodeName === 'BR') el.lastChild.remove();
+}
+
+function buildSanitizedDiv(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const frag = document.createDocumentFragment();
+  sanitizeNode(doc.body, frag);
+  const tmp = document.createElement('div');
+  tmp.appendChild(frag);
+  collapseBrs(tmp);
+  return tmp;
+}
+
 scriptInput.addEventListener('paste', (e) => {
   e.preventDefault();
   const html = e.clipboardData.getData('text/html');
   if (html) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const frag = document.createDocumentFragment();
-    sanitizeNode(doc.body, frag);
-    const tmp = document.createElement('div');
-    tmp.appendChild(frag);
-    document.execCommand('insertHTML', false, tmp.innerHTML);
+    document.execCommand('insertHTML', false, buildSanitizedDiv(html).innerHTML);
   } else {
     const text = e.clipboardData.getData('text/plain');
     document.execCommand('insertText', false, text);
@@ -402,11 +395,15 @@ function dimHud() {
   hud.classList.add('dimmed');
 }
 
-mirrorToggle.addEventListener('change', applyTransform);
-flipVToggle.addEventListener('change', () => {
+mirrorToggle.addEventListener('click', () => {
+  mirrorToggle.classList.toggle('active');
+  applyTransform();
+});
+flipVToggle.addEventListener('click', () => {
+  flipVToggle.classList.toggle('active');
   applyTransform();
   // Move cue line to mirror position when flipped
-  focusLine.style.top = flipVToggle.checked ? '67%' : '33%';
+  focusLine.style.top = flipVToggle.classList.contains('active') ? '67%' : '33%';
   // Re-anchor scroll position to the correct end for the new direction
   if (prompterView.classList.contains('active')) {
     stopScrolling();
