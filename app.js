@@ -252,6 +252,31 @@ speedSlider.addEventListener('input', () => {
   updateProgress();
 });
 
+// Touch scrub: drag anywhere on the speed control for fine-grained adjustment.
+// Every SPEED_PX_PER_STEP pixels of horizontal drag = 1 unit change.
+const SPEED_PX_PER_STEP = 12;
+let speedDragStartX   = null;
+let speedDragStartVal = null;
+
+speedSlider.closest('label').addEventListener('touchstart', (e) => {
+  speedDragStartX   = e.touches[0].clientX;
+  speedDragStartVal = +speedSlider.value;
+}, { passive: true });
+
+speedSlider.closest('label').addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  const steps  = Math.round((e.touches[0].clientX - speedDragStartX) / SPEED_PX_PER_STEP);
+  const newVal = Math.max(+speedSlider.min, Math.min(+speedSlider.max, speedDragStartVal + steps));
+  if (+speedSlider.value !== newVal) {
+    speedSlider.value = newVal;
+    speedSlider.dispatchEvent(new Event('input'));
+  }
+}, { passive: false });
+
+speedSlider.closest('label').addEventListener('touchend', () => {
+  speedDragStartX = speedDragStartVal = null;
+});
+
 sizeSlider.addEventListener('input', () => {
   applyFontSize(+sizeSlider.value);
   sizeVal.textContent = sizeSlider.value;
