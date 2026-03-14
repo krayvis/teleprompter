@@ -314,6 +314,15 @@ html, body {
   justify-content: center;
 }
 
+/* Close button floats at the same screen position as the gear open button */
+.settings-close-float {
+  position: absolute;
+  bottom: calc(.85rem + env(safe-area-inset-bottom, 0px));
+  right: 1.25rem;
+  margin-left: 0;
+  z-index: 1;
+}
+
 /* ── Settings panel ───────────────────────────────────────── */
 #settings-panel {
   position: absolute;
