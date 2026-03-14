@@ -4,6 +4,7 @@ const prompterView  = document.getElementById('prompter-view');
 const scriptInput   = document.getElementById('script-input');   // contenteditable div
 const scriptText    = document.getElementById('script-text');
 const scrollContainer = document.getElementById('scroll-container');
+const scrollContent   = document.getElementById('scroll-content');
 
 const startBtn      = document.getElementById('start-btn');
 const pasteBtn      = document.getElementById('paste-btn');
@@ -65,9 +66,11 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// pixels per second at speed=1; multiply by slider value
-// Max speed: 25 * 8 = 200 px/s
-const BASE_SPEED = 8;
+// Map slider value 1–25 linearly to 10–200 px/s
+function getSpeed() {
+  const t = (+speedSlider.value - 1) / 24; // 0 at min, 1 at max
+  return Math.round(10 + t * 190);
+}
 
 // ── View switching ─────────────────────────────────────────────
 function showPrompter() {
@@ -94,7 +97,7 @@ function showPrompter() {
 
 function resetScroll() {
   offsetY = 0;
-  scrollContainer.scrollTop = 0;
+  scrollContent.style.transform = 'translateY(0)';
 }
 
 function showEditor() {
@@ -210,10 +213,10 @@ function tick(ts) {
   const dt = (ts - lastTs) / 1000; // seconds
   lastTs = ts;
 
-  const speed = +speedSlider.value * BASE_SPEED; // px/s
+  const speed = getSpeed(); // px/s
   offsetY += speed * dt;
 
-  scrollContainer.scrollTop = Math.floor(offsetY);
+  scrollContent.style.transform = `translateY(-${offsetY}px)`;
 
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
   if (offsetY >= maxScroll) {
@@ -231,12 +234,12 @@ function tick(ts) {
 function updateProgress() {
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
   if (maxScroll <= 0) return;
-  const pct = Math.round((scrollContainer.scrollTop / maxScroll) * 100);
-  const remainingPx = Math.max(0, maxScroll - scrollContainer.scrollTop);
+  const pct = Math.round((offsetY / maxScroll) * 100);
+  const remainingPx = Math.max(0, maxScroll - offsetY);
 
   progressLabel.textContent = `${Math.max(0, Math.min(100, pct))}%`;
 
-  const speedPxPerSec = +speedSlider.value * BASE_SPEED;
+  const speedPxPerSec = getSpeed();
   const totalSec = Math.round(remainingPx / speedPxPerSec);
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
@@ -468,7 +471,7 @@ scrollContainer.addEventListener('wheel', (e) => {
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
   if (tapPauseToggle.checked) stopScrolling();
   offsetY = Math.max(0, Math.min(offsetY + e.deltaY, maxScroll));
-  scrollContainer.scrollTop = Math.floor(offsetY);
+  scrollContent.style.transform = `translateY(-${offsetY}px)`;
   updateProgress();
   showHud();
 }, { passive: false });
@@ -491,7 +494,7 @@ function runMomentum(ts) {
 
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
   offsetY = Math.max(0, Math.min(offsetY + touchVelocity * dt, maxScroll));
-  scrollContainer.scrollTop = Math.floor(offsetY);
+  scrollContent.style.transform = `translateY(-${offsetY}px)`;
   updateProgress();
 
   // Friction: ~0.995 per ms gives a natural ~1s coast
@@ -524,7 +527,7 @@ scrollContainer.addEventListener('touchmove', (e) => {
 
   const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
   offsetY = Math.max(0, Math.min(offsetY + dy, maxScroll));
-  scrollContainer.scrollTop = Math.floor(offsetY);
+  scrollContent.style.transform = `translateY(-${offsetY}px)`;
   updateProgress();
   showHud();
 }, { passive: false });
