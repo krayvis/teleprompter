@@ -46,6 +46,9 @@ let wakeLock      = null;
 let countdownId   = null;
 
 // ── Screen Wake Lock ───────────────────────────────────────────
+const WAKE_IDLE_MS = 10 * 60 * 1000; // 10 minutes
+let wakeLockIdleTimer = null;
+
 async function acquireWakeLock() {
   if (!('wakeLock' in navigator)) return;
   try {
@@ -54,16 +57,24 @@ async function acquireWakeLock() {
 }
 
 function releaseWakeLock() {
-  if (wakeLock) {
-    wakeLock.release();
-    wakeLock = null;
-  }
+  clearTimeout(wakeLockIdleTimer);
+  wakeLockIdleTimer = null;
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+}
+
+function startWakeLockIdleTimer() {
+  clearTimeout(wakeLockIdleTimer);
+  wakeLockIdleTimer = setTimeout(releaseWakeLock, WAKE_IDLE_MS);
+}
+
+function resetWakeLockIdleTimer() {
+  // Only relevant when paused in the prompter with wake lock held
+  if (wakeLock && !isPlaying) startWakeLockIdleTimer();
 }
 
 // Re-acquire after tab regains visibility (required by the API)
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' &&
-      prompterView.classList.contains('active')) {
+  if (document.visibilityState === 'visible' && isPlaying) {
     acquireWakeLock();
   }
 });
@@ -87,7 +98,6 @@ function showPrompter() {
 
   editView.classList.remove('active');
   prompterView.classList.add('active');
-  acquireWakeLock();
 
   // Wait one frame so the DOM has rendered and scrollHeight is accurate
   requestAnimationFrame(() => {
@@ -144,6 +154,8 @@ function beginScrolling() {
   playPauseBtn.classList.add('is-playing');
   cancelMomentum();
   closeSettings();
+  clearTimeout(wakeLockIdleTimer);  // cancel idle release — playback holds wake lock
+  acquireWakeLock();
   rafId = requestAnimationFrame(tick);
 }
 
@@ -188,6 +200,7 @@ function stopScrolling() {
   rafId = null;
   clearTimeout(hudTimeout);
   hud.classList.remove('dimmed'); // always show full controls when paused
+  startWakeLockIdleTimer();       // release wake lock after 10 min idle
 }
 
 function togglePlay() {
@@ -613,8 +626,12 @@ function showHud() {
 }
 
 prompterView.addEventListener('mousemove', () => {
-  if (prompterView.classList.contains('active')) showHud();
+  if (prompterView.classList.contains('active')) { showHud(); resetWakeLockIdleTimer(); }
 });
+
+prompterView.addEventListener('touchstart', () => {
+  resetWakeLockIdleTimer();
+}, { passive: true });
 
 prompterView.addEventListener('click', (e) => {
   // Clicks on the background toggle play; HUD buttons handle themselves
