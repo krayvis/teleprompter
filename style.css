@@ -46,7 +46,7 @@ html, body {
 .btn-ghost.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .btn-large    { padding: .75rem 2rem; font-size: 1.1rem; }
 #play-pause-btn { width: 7em; padding-left: 1rem; padding-right: 1rem; text-align: center; }
-#mirror-toggle, #flip-v-toggle { font-size: 1.4rem; }
+#mirror-toggle, #flip-v-toggle { font-size: 1.4rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
 
 /* ── EDIT VIEW ────────────────────────────────────────────── */
 #edit-view .toolbar {
