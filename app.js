@@ -291,6 +291,11 @@ function applyTransform() {
   const lt = (lx === 1 && ly === 1) ? '' : `scale(${lx},${ly})`;
   progressLabel.style.transform = lt;
   timeLabel.style.transform = lt;
+
+  // Countdown overlay sits outside scroll-container, so mirror it independently
+  const cx = h ? -1 : 1;
+  const cy = v ? -1 : 1;
+  countdownOverlay.style.transform = (cx === 1 && cy === 1) ? '' : `scale(${cx},${cy})`;
 }
 
 // ── Format toolbar ─────────────────────────────────────────────
