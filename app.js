@@ -28,16 +28,19 @@ const marginVal        = document.getElementById('margin-val');
 const cueToggle        = document.getElementById('cue-toggle');
 const focusLine        = document.getElementById('focus-line');
 const themeRadios      = document.querySelectorAll('input[name="theme"]');
-const tapPauseToggle   = document.getElementById('tap-pause-toggle');
-const fontPicker       = document.getElementById('font-picker');
+const tapPauseToggle     = document.getElementById('tap-pause-toggle');
+const countdownToggle    = document.getElementById('countdown-toggle');
+const countdownOverlay   = document.getElementById('countdown-overlay');
+const fontPicker         = document.getElementById('font-picker');
 
 // ── State ──────────────────────────────────────────────────────
-let isPlaying   = false;
-let offsetY     = 0;        // fractional pixel offset for smooth slow speeds
-let rafId       = null;
-let lastTs      = null;
-let hudTimeout  = null;
-let wakeLock    = null;
+let isPlaying     = false;
+let offsetY       = 0;        // fractional pixel offset for smooth slow speeds
+let rafId         = null;
+let lastTs        = null;
+let hudTimeout    = null;
+let wakeLock      = null;
+let countdownId   = null;
 
 // ── Screen Wake Lock ───────────────────────────────────────────
 async function acquireWakeLock() {
@@ -124,11 +127,12 @@ pasteBtn.addEventListener('click', async () => {
 });
 
 // ── Play / Pause ───────────────────────────────────────────────
-function startScrolling() {
-  if (isPlaying) return;
-  // If at the end, restart from the beginning
-  const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
-  if (offsetY >= maxScroll) resetScroll();
+function cancelCountdown() {
+  if (countdownId) { clearTimeout(countdownId); countdownId = null; }
+  countdownOverlay.classList.remove('active');
+}
+
+function beginScrolling() {
   isPlaying = true;
   lastTs = null;
   playPauseBtn.textContent = 'II Pause';
@@ -138,11 +142,43 @@ function startScrolling() {
   rafId = requestAnimationFrame(tick);
 }
 
+function startScrolling() {
+  if (isPlaying || countdownId !== null) return;
+  // If at the end, restart from the beginning
+  const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
+  if (offsetY >= maxScroll) resetScroll();
+
+  if (countdownToggle.checked) {
+    let n = 5;
+    countdownOverlay.textContent = n;
+    countdownOverlay.classList.add('active');
+    playPauseBtn.textContent = 'II Pause';
+    playPauseBtn.classList.add('is-playing');
+    closeSettings();
+    const step = () => {
+      n--;
+      if (n <= 0) {
+        countdownOverlay.classList.remove('active');
+        countdownId = null;
+        beginScrolling();
+        return;
+      }
+      countdownOverlay.textContent = n;
+      countdownId = setTimeout(step, 1000);
+    };
+    countdownId = setTimeout(step, 1000);
+    return;
+  }
+
+  beginScrolling();
+}
+
 function stopScrolling() {
-  if (!isPlaying) return;
-  isPlaying = false;
+  cancelCountdown();
   playPauseBtn.textContent = '▶ Play';
   playPauseBtn.classList.remove('is-playing');
+  if (!isPlaying) return;
+  isPlaying = false;
   cancelAnimationFrame(rafId);
   rafId = null;
   clearTimeout(hudTimeout);
@@ -150,7 +186,11 @@ function stopScrolling() {
 }
 
 function togglePlay() {
-  isPlaying ? stopScrolling() : startScrolling();
+  if (isPlaying || countdownId !== null) {
+    stopScrolling();
+  } else {
+    startScrolling();
+  }
 }
 
 playPauseBtn.addEventListener('click', togglePlay);

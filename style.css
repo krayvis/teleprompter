@@ -264,6 +264,22 @@ html, body {
 .toggle input:checked + .toggle-track { background: var(--accent); }
 .toggle input:checked + .toggle-track::after { transform: translateX(16px); }
 
+/* ── Countdown overlay ────────────────────────────────────── */
+#countdown-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  align-items: center;
+  justify-content: center;
+  font-size: 25vmin;
+  font-weight: 700;
+  color: rgba(255, 255, 255, .9);
+  pointer-events: none;
+  text-shadow: 0 4px 32px rgba(0, 0, 0, .6);
+}
+#countdown-overlay.active { display: flex; }
+
 /* ── Focus / cue line ─────────────────────────────────────── */
 #focus-line {
   display: none;
