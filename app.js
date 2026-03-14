@@ -32,7 +32,9 @@ const themeRadios      = document.querySelectorAll('input[name="theme"]');
 const tapPauseToggle     = document.getElementById('tap-pause-toggle');
 const countdownToggle    = document.getElementById('countdown-toggle');
 const countdownOverlay   = document.getElementById('countdown-overlay');
-const fontPicker         = document.getElementById('font-picker');
+const fontPickerBtn      = document.getElementById('font-picker-btn');
+const fontPickerMenu     = document.getElementById('font-picker-menu');
+let   currentFont        = 'system-ui, sans-serif';
 
 // ── State ──────────────────────────────────────────────────────
 let isPlaying     = false;
@@ -81,7 +83,7 @@ function showPrompter() {
 
   scriptText.innerHTML = raw;
   applyFontSize(+sizeSlider.value);
-  applyFont(fontPicker.value);
+  applyFont(currentFont);
 
   editView.classList.remove('active');
   prompterView.classList.add('active');
@@ -291,7 +293,25 @@ function applyFont(family) {
   scriptText.style.fontFamily  = family;
 }
 
-fontPicker.addEventListener('change', () => applyFont(fontPicker.value));
+fontPickerBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  fontPickerMenu.classList.toggle('open');
+});
+
+document.querySelectorAll('.font-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    currentFont = opt.dataset.font;
+    fontPickerBtn.textContent = opt.textContent.trim();
+    fontPickerBtn.style.fontFamily = currentFont;
+    document.querySelectorAll('.font-opt').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    applyFont(currentFont);
+    fontPickerMenu.classList.remove('open');
+  });
+});
+
+// Close the font menu when clicking anywhere else
+document.addEventListener('click', () => fontPickerMenu.classList.remove('open'));
 
 function applyTransform() {
   const h = mirrorToggle.classList.contains('active');

@@ -23,17 +23,20 @@
       <button class="fmt-btn" data-cmd="italic"      title="Italic (⌘I)"><i>I</i></button>
       <button class="fmt-btn" data-cmd="underline"   title="Underline (⌘U)"><u>U</u></button>
       <div class="fmt-divider"></div>
-      <button id="paste-btn" class="fmt-btn" title="Paste from clipboard">⎘</button>
+      <div id="font-picker-wrap" class="font-picker-wrap">
+        <button id="font-picker-btn" class="fmt-btn font-picker-btn" title="Font">System</button>
+        <div id="font-picker-menu" class="font-picker-menu">
+          <div class="font-opt" data-font="system-ui, sans-serif"                    style="font-family: system-ui, sans-serif">System</div>
+          <div class="font-opt" data-font="'Inter', sans-serif"                       style="font-family: 'Inter', sans-serif">Inter</div>
+          <div class="font-opt" data-font="'Atkinson Hyperlegible', sans-serif"       style="font-family: 'Atkinson Hyperlegible', sans-serif">Atkinson</div>
+          <div class="font-opt" data-font="Georgia, serif"                            style="font-family: Georgia, serif">Georgia</div>
+          <div class="font-opt" data-font="'Lora', serif"                             style="font-family: 'Lora', serif">Lora</div>
+          <div class="font-opt" data-font="'Courier Prime', monospace"                style="font-family: 'Courier Prime', monospace">Courier</div>
+          <div class="font-opt" data-font="'PT Serif', serif"                         style="font-family: 'PT Serif', serif">PT Serif</div>
+        </div>
+      </div>
       <div class="fmt-divider"></div>
-      <select id="font-picker" class="font-picker" title="Font">
-        <option value="system-ui, sans-serif">System</option>
-        <option value="'Inter', sans-serif">Inter</option>
-        <option value="'Atkinson Hyperlegible', sans-serif">Atkinson</option>
-        <option value="Georgia, serif">Georgia</option>
-        <option value="'Lora', serif">Lora</option>
-        <option value="'Courier Prime', monospace">Courier</option>
-        <option value="'PT Serif', serif">PT Serif</option>
-      </select>
+      <button id="paste-btn" class="fmt-btn" title="Paste from clipboard">⎘</button>
     </div>
 
     <main class="editor-area">

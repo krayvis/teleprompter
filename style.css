@@ -92,19 +92,43 @@ html, body {
   align-self: stretch;
 }
 
-.font-picker {
+.font-picker-wrap { position: relative; }
+
+.font-picker-btn {
+  min-width: 88px;
   height: 32px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
+  text-align: left;
   font-size: .85rem;
   padding: 0 .5rem;
-  cursor: pointer;
-  outline: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.font-picker:hover { border-color: var(--muted); }
-.font-picker option { background: var(--surface); color: var(--text); }
+
+.font-picker-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  z-index: 100;
+  min-width: 160px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.4);
+}
+.font-picker-menu.open { display: block; }
+
+.font-opt {
+  padding: .5rem .75rem;
+  font-size: 1.05rem;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.font-opt:hover    { background: var(--border); }
+.font-opt.selected { color: var(--accent); }
 
 .editor-area { flex: 1; display: flex; padding: 1.25rem; overflow: hidden; }
 
