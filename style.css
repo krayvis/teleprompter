@@ -141,7 +141,11 @@ html, body {
 #scroll-container {
   position: absolute;
   inset: 0;
-  overflow: hidden;         /* JS controls scrolling via transform */
+  overflow: hidden;
+}
+
+#scroll-content {
+  will-change: transform;   /* sub-pixel translateY for smooth slow scrolling */
 }
 
 #script-text {
@@ -240,6 +244,12 @@ html, body {
 .control-group input[type="range"] {
   accent-color: var(--accent);
   width: 140px;
+}
+
+.control-group span:last-child {
+  min-width: 2rem;
+  text-align: right;
+  display: inline-block;
 }
 
 /* Toggle switch */
